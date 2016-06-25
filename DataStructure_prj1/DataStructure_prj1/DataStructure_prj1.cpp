@@ -307,18 +307,19 @@ void display_statistics(User *u, Word *w, Friend *f) {
 	int avert = 0, maxt = 0, mint = 5000;
 	int n = 0;
 
-	for (Friend *p; p; p = p->next) {
+	for (Friend *p = f; p; p = p->next) {
 		n++;
 		int m = 0;
-		for (Adj *pp; pp; pp = pp->next) 
+		for (Adj *pp = p->fri; pp; pp = pp->next) 
 			m++;
-		averf = averf*((n - 1) / n) + m / n;
+		averf += m;
 		if (maxf < m)
 			maxf = m;
-		if (minf < m)
+		if (minf > m)
 			minf = m;
 	}
-	for (Word *p; p; p = p->next) {
+	averf /= n;
+	for (Word *p = w; p; p = p->next) {
 		if (p->next_id != NULL) {
 			for (Adj *y = p->next_id; y; y = y->next) {
 				for (User *k = u; k;) {
@@ -337,7 +338,7 @@ void display_statistics(User *u, Word *w, Friend *f) {
 		}
 	}
 	n = 0;
-	for (User *p; p; p = p->next) {
+	for (User *p = u; p; p = p->next) {
 		n++;
 		if (maxt < p->word)
 			maxt = p->word;
@@ -416,6 +417,7 @@ int main() {
 	Word *root_word = get_User_word(file_word, f_word);
 	Friend *root_friend = get_User_friend(file_friend,f_friend);
 	User *r = root_user;
+
 	root_word = build_word_bintree(root_word);
 	//root_user = build_user_bintree(r);
 	
