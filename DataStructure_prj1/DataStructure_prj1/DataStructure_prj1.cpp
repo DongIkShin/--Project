@@ -196,7 +196,7 @@ Word* get_User_word(FILE *file_word,char *f_word) {
 }
 
 void insert_user_bintree(User *r, User *src) {
-	for (User *p = r;src;) {
+	for (User *p = r;src != NULL;) {
 		if (strcmp(p->id.id_num, src->id.id_num) > 0) {
 			if (p->left == NULL) {
 				p->left = src;
@@ -218,7 +218,7 @@ void insert_user_bintree(User *r, User *src) {
 			}
 		}
 		else
-			src == NULL;
+			break;
 	}
 }
 User* jump(int n, User *r) {
@@ -280,15 +280,16 @@ void insert_word_bintree(Word *r, Word *src) {
 		}
 	}
 }
-User *build_user_bintree(User *root) {
+
+User* build_user_bintree(User *root) {
 	User *r = root;
-	root = jump(cnt_user/2,root);
+	r = jump(cnt_user/2,root);
 	printf("now building user bintree\n");
 	int i = 0;
-	for (User *p = root;p; p=p->next) {
+	for (User *p = root ;p; p = p->next) {
 		i++;
 		insert_user_bintree(root, p);
-		printf("inserted user [%s] %d\n",p->id.id_num,i);
+		//printf("inserted user [%s] %d\n",p->id.id_num,i);
 	}
 	printf("build user tree completed\n");
 	return root;
@@ -344,7 +345,7 @@ void display_statistics(User *u, Word *w, Friend *f) {
 			maxt = p->word;
 		if (mint > p->word)
 			mint = p->word;
-		avert = avert*((n - 1) / n) + p->word / n;
+		avert += n;
 	}
 
 	printf("Average number of friends : %d\n", averf);
@@ -370,8 +371,20 @@ void top_5_word(Word *r) {
 	for (int i = 0; i < 10; i++)
 		printf(" [%d] %s : %d times\n", i + 1,max_word[i]->content,max[i]);
 }
-void top_5_user(User *user, Word *word) {
-
+void top_5_user(User *r) {
+	int max[10] = { 0 };
+	User *max_user[10] = { NULL };
+	for (User *p = r; p; p = p->next) {
+		for (int i = 0; i < 10; i++) {
+			if (max[i] < p->word) {
+				max_user[i] = p;
+				max[i] = p->word;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < 10; i++)
+		printf(" [%d] [%s]  %s %d times\n", i + 1, max_user[i]->id.id_num, max_user[i]->id.id_name,max[i]);
 }
 void inorder(Word*r) {
 	if (r) {
@@ -379,6 +392,15 @@ void inorder(Word*r) {
 		printf(" %s %d\n",r->content,r->cnt);
 		int t = clock();
 		while (t + 100 > clock());
+		inorder(r->right);
+	}
+}
+void inorder(User *r) {
+	if (r) {
+		inorder(r->left);
+		printf(" %s\n", r->id.id_num);
+		//int t = clock();
+		//while (t + 100 > clock());
 		inorder(r->right);
 	}
 }
@@ -419,8 +441,11 @@ int main() {
 	User *r = root_user;
 
 	root_word = build_word_bintree(root_word);
-	//root_user = build_user_bintree(r);
-	
+	printf(" %s\n",root_user->next->id.id_num);
+	//inorder(root_user);
+	root_user = build_user_bintree(r);
+	//inorder(root_user);
+
 	int Select = 0;
 	while (Select != 99) {
 		printf(" 0. Read data files\n");
@@ -446,7 +471,7 @@ int main() {
 			top_5_word(root_word);
 			break;
 		case 3:
-			top_5_user(root_user, root_word);
+			top_5_user(root_user);
 			break;
 		case 4:
 			find_user(root_word);
@@ -468,6 +493,7 @@ int main() {
 			break;
 		case 99:
 			printf("Quit Program\n");
+			break;
 		default:
 			printf("Wrong Input\n");
 		}
